@@ -6,7 +6,7 @@ REL=./releases/
 function std_version {
 	echo "#define FORMAT_$1" > src/zodiac_config.h
 	./waf clean build
-	mv build/zodiac.pbw $REL/zodiac_$1_v$2.pbw
+	mv build/pebble-zodiac.pbw $REL/zodiac_$1_v$2.pbw
 }
 
 
