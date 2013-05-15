@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VER=1.0
-REL=../releases/
+REL=./releases/
 
 function std_version {
 	echo "#define FORMAT_$1" > src/zodiac_config.h
