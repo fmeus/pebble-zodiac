@@ -1,7 +1,6 @@
 /*
   Project     : Signs watchface
   Copyright   : Copyright (c) 2011-2013 Little Gem Software. All rights reserved.
-  Revision    : $Id: zodiac.c 1087 2013-05-06 19:54:45Z fmeus_lgs $
 */
 
 #include "pebble_os.h"
