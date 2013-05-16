@@ -1,7 +1,6 @@
 /*
   Project     : Zodiac watchface
   Copyright   : Copyright (c) 2011-2013 Little Gem Software. All rights reserved.
-  Revision    : $Id: lgs_languages.h 1076 2013-05-06 08:04:47Z fmeus_lgs $
 */
 
 #if defined(FORMAT_DMY)
