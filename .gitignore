@@ -11,8 +11,5 @@ include
 lib
 pebble_app.ld
 
-# Ignore other generated files
-serial_dump.txt
-
 # Ignore Mac stuff
 .DS_Store
