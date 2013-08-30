@@ -17,7 +17,7 @@ Clone this repository in an appropriate directory:
 
 Set up waf:
 
-	python ~/pebble-dev/pebble-sdk-release-001/tools/create_pebble_project.py --symlink-only ~/pebble-dev/pebble-sdk-release-001/sdk/ pebble-zodiac
+	python ~/PebbleKit/Pebble/tools/create_pebble_project.py --symlink-only ~/PebbleKit/Pebble/sdk/ pebble-zodiac
 	cd pebble-zodiac
 
 Configure and build:
