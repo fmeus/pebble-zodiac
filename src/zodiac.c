@@ -15,6 +15,8 @@ static TextLayer   *text_time_layer;
 static TextLayer   *text_date_layer;
 static GBitmap     *sign_image;
 static BitmapLayer *sign_layer;
+static GFont       *font_date;
+static GFont       *font_time;
 
 
 // This works around the inability to use the current GRect macro for constants. (Taken from drop_zone.c)
@@ -154,11 +156,13 @@ static void handle_init( void ) {
   layer_add_child( window_layer, bitmap_layer_get_layer( sign_layer ) );
 
   // Time layer
-  text_time_layer = setup_text_layer( TIME_RECT, GTextAlignmentCenter, fonts_load_custom_font( resource_get_handle( RESOURCE_ID_FONT_ARCHISM_SUBSET_48 ) ) );
+  font_time = fonts_load_custom_font( resource_get_handle( RESOURCE_ID_FONT_ARCHISM_SUBSET_48 ) );
+  text_time_layer = setup_text_layer( TIME_RECT, GTextAlignmentCenter, font_time );
   layer_add_child( window_layer, text_layer_get_layer(text_time_layer) );
 
   // Date layer
-  text_date_layer = setup_text_layer( DATE_RECT, GTextAlignmentCenter, fonts_load_custom_font( resource_get_handle( RESOURCE_ID_FONT_ARCHISM_20 ) ) );
+  font_date = fonts_load_custom_font( resource_get_handle( RESOURCE_ID_FONT_ARCHISM_20 ) );
+  text_date_layer = setup_text_layer( DATE_RECT, GTextAlignmentCenter, font_date );
   layer_add_child( window_layer, text_layer_get_layer(text_date_layer) );
 
   // Subscribe to services
@@ -184,6 +188,10 @@ static void handle_deinit( void ) {
   layer_remove_from_parent(bitmap_layer_get_layer(sign_layer));
   bitmap_layer_destroy( sign_layer );
   gbitmap_destroy( sign_image );
+
+  // Destroy font objects
+  fonts_unload_custom_font( font_date );
+  fonts_unload_custom_font( font_time );
 
   // Destroy window
   window_destroy( window );
