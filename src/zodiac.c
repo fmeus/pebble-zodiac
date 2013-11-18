@@ -141,7 +141,7 @@ static TextLayer * setup_text_layer( GRect rect, GTextAlignment align , GFont fo
 /*
   Initialization
 */
-static void handle_init( ) {
+static void handle_init( void ) {
   // Setup main window
   window = window_create();
   window_stack_push( window, true );
@@ -163,6 +163,11 @@ static void handle_init( ) {
 
   // Subscribe to services
   tick_timer_service_subscribe( MINUTE_UNIT, handle_tick );
+
+  // Avoids a blank screen on watch start.
+  time_t now = time(NULL);
+  struct tm *tick_time = localtime(&now);
+  handle_tick( tick_time, MINUTE_UNIT );
 }
 
 
@@ -180,6 +185,7 @@ static void handle_deinit( void ) {
   bitmap_layer_destroy( sign_layer );
   gbitmap_destroy( sign_image );
 
+  // Destroy window
   window_destroy( window );
 }
 
