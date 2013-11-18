@@ -1,11 +1,12 @@
 #!/bin/bash
 
-VER=1.0
+VER=2.0
 REL=./releases/
 
 function std_version {
 	echo "#define FORMAT_$1" > src/zodiac_config.h
-	./waf clean build
+	pebble clean
+	pebble build
 	mv build/pebble-zodiac.pbw $REL/zodiac_$1_v$2.pbw
 }
 

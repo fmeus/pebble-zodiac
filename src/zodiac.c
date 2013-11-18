@@ -1,26 +1,20 @@
 /*
   Project     : Signs watchface
   Copyright   : Copyright (c) 2011-2013 Little Gem Software. All rights reserved.
+  Pebble SDK  : 2.0-BETA2
 */
 
-#include "pebble_os.h"
-#include "pebble_app.h"
-#include "pebble_fonts.h"
+#include <pebble.h>
 #include "zodiac_config.h"
 #include "zodiac_versions.h"
 
 
-// Define the watch face structure
-PBL_APP_INFO( MY_UUID, APP_NAME, "Little Gem Software", 1, 0, RESOURCE_ID_IMAGE_MENU_ICON, APP_INFO_WATCH_FACE );
-
-
 // All UI elements
-Window window;
-TextLayer     text_time_layer;
-TextLayer     text_date_layer;
-BmpContainer  sign_image;
-GFont         font_time;
-GFont         font_date;
+static Window      *window;
+static TextLayer   *text_time_layer;
+static TextLayer   *text_date_layer;
+static GBitmap     *sign_image;
+static BitmapLayer *sign_layer;
 
 
 // This works around the inability to use the current GRect macro for constants. (Taken from drop_zone.c)
@@ -56,31 +50,26 @@ const int ZODIAC_SIGNS[] = {
 /*
   set_container_image
 */
-void set_container_image( BmpContainer *bmp_container, const int resource_id, GPoint origin ) {
-  // Cleanup old image
-  layer_remove_from_parent( &bmp_container->layer.layer );
-  bmp_deinit_container( bmp_container );
+void set_container_image( GBitmap **bmp_container, const int resource_id, GPoint origin ) {
+  GBitmap *old_image = *bmp_container;
 
   // Load new image
-  bmp_init_container( resource_id, bmp_container );
+  *bmp_container = gbitmap_create_with_resource( resource_id );
+  bitmap_layer_set_bitmap( sign_layer, *bmp_container );
 
-  // Correct image placement
-  GRect frame = layer_get_frame( &bmp_container->layer.layer );
-  frame.origin.x = origin.x;
-  frame.origin.y = origin.y;
-  layer_set_frame( &bmp_container->layer.layer, frame );
-
-  // Add image to the window layer (i.e. make it visible)
-  layer_add_child( &window.layer, &bmp_container->layer.layer );
+  // Cleanup old image
+  if ( old_image != NULL ) {
+    gbitmap_destroy( old_image );    
+  }
 }
 
 
 /* 
   Determine based on the current month/day what the current Zodiac sign
 */
-int get_zodiac_sign( PblTm date ) {
+int get_zodiac_sign( struct tm *t ) {
   int zodiac_sign;
-  int index = ( (date.tm_mon+1) * 100 ) + date.tm_mday;
+  int index = ( (t->tm_mon+1) * 100 ) + t->tm_mday;
 
   if ( ( index >= 321 ) && ( index <= 419 ) ) { zodiac_sign = 0; }  // Aries
   if ( ( index >= 420 ) && ( index <= 520 ) ) { zodiac_sign = 1; }  // Taurus
@@ -102,40 +91,30 @@ int get_zodiac_sign( PblTm date ) {
 /*
   Handle tick event
 */
-void handle_tick( AppContextRef ctx, PebbleTickEvent *event ) {
-  (void)ctx;
-
-  // Get the current time
-  PblTm currentTime;
-  get_time( &currentTime );
-
+void handle_tick( struct tm *tick_time, TimeUnits units_changed ) {
   // Handle day change
-  if ( ( ( event->units_changed & DAY_UNIT ) == DAY_UNIT ) || first_cycle  ) {
-    string_format_time( date_text, sizeof( date_text ), date_format, &currentTime );
-    text_layer_set_text( &text_date_layer, date_text );
+  if ( ( ( units_changed & DAY_UNIT ) == DAY_UNIT ) || first_cycle  ) {
+    strftime( date_text, sizeof( date_text ), date_format, tick_time );
+    text_layer_set_text( text_date_layer, date_text );
 
     // Draw image to divide day box from top line
-    set_container_image( &sign_image, ZODIAC_SIGNS[ get_zodiac_sign( currentTime ) ], GPoint( 26, 45 ) );
+    set_container_image( &sign_image, ZODIAC_SIGNS[ get_zodiac_sign( tick_time ) ], GPoint( 26, 45 ) );
   }
 
   // Handle time (hour and minute) change
-  if ( ( ( event->units_changed & MINUTE_UNIT ) == MINUTE_UNIT ) || first_cycle  ) {
+  if ( ( ( units_changed & MINUTE_UNIT ) == MINUTE_UNIT ) || first_cycle  ) {
     // Placeholder for time info
     static char time_text[] = "00:00";
 
     // Display hours (i.e. 18 or 06)
-    string_format_time( time_text, sizeof( time_text ), clock_is_24h_style() ? "%H:%M" : "%I:%M", &currentTime );
+    strftime( time_text, sizeof( time_text ), clock_is_24h_style() ? "%H:%M" : "%I:%M", tick_time );
 
     // Remove leading zero (only in 12h-mode)
     if ( !clock_is_24h_style() && (time_text[0] == '0') ) {
       memmove( time_text, &time_text[1], sizeof( time_text ) - 1 );
     }
 
-    text_layer_set_text( &text_time_layer, time_text );
-
-    // Update AM/PM indicator (i.e. AM or PM or nothing when using 24-hour style)
-    // string_format_time( ampm_text, sizeof( ampm_text ), clock_is_24h_style() ? "\0" : "%p", &currentTime );
-    // text_layer_set_text( &text_ampm_layer, ampm_text );
+    text_layer_set_text( text_time_layer, time_text );
   }
 
   // Clear
@@ -148,71 +127,67 @@ void handle_tick( AppContextRef ctx, PebbleTickEvent *event ) {
 /*
   Setup new TextLayer
 */
-void setup_text_layer( TextLayer *newLayer, GRect rect, GTextAlignment align , GFont font ) {
-  text_layer_init( newLayer, rect );
+static TextLayer * setup_text_layer( GRect rect, GTextAlignment align , GFont font ) {
+  TextLayer *newLayer = text_layer_create( rect );
   text_layer_set_text_color( newLayer, GColorWhite );
   text_layer_set_background_color( newLayer, GColorClear );
   text_layer_set_text_alignment( newLayer, align );
   text_layer_set_font( newLayer, font );
+
+  return newLayer;
 }
 
 
 /*
   Initialization
 */
-void handle_init( AppContextRef ctx ) {
-  (void)ctx;
-
-  // Load resources
-  resource_init_current_app( &APP_RESOURCES );
-
+static void handle_init( ) {
   // Setup main window
-  window_init( &window, "Signs" );
-  window_stack_push( &window, true );
-  window_set_background_color( &window, GColorBlack );
+  window = window_create();
+  window_stack_push( window, true );
+  window_set_background_color( window, GColorBlack );
+  Layer *window_layer = window_get_root_layer( window );
 
-  // Load custom fonts
-  font_time = fonts_load_custom_font( resource_get_handle( RESOURCE_ID_FONT_ARCHISM_SUBSET_48 ) );
-  font_date = fonts_load_custom_font( resource_get_handle( RESOURCE_ID_FONT_ARCHISM_20 ) );
+  // Sign layer
+  GRect sign_frame = { {26,45}, {90, 90} };
+  sign_layer = bitmap_layer_create( sign_frame );
+  layer_add_child( window_layer, bitmap_layer_get_layer( sign_layer ) );
 
   // Time layer
-  setup_text_layer( &text_time_layer, TIME_RECT, GTextAlignmentCenter, font_time );
-  layer_add_child( &window.layer, &text_time_layer.layer );
+  text_time_layer = setup_text_layer( TIME_RECT, GTextAlignmentCenter, fonts_load_custom_font( resource_get_handle( RESOURCE_ID_FONT_ARCHISM_SUBSET_48 ) ) );
+  layer_add_child( window_layer, text_layer_get_layer(text_time_layer) );
 
   // Date layer
-  setup_text_layer( &text_date_layer, DATE_RECT, GTextAlignmentCenter, font_date );
-  layer_add_child( &window.layer, &text_date_layer.layer );
+  text_date_layer = setup_text_layer( DATE_RECT, GTextAlignmentCenter, fonts_load_custom_font( resource_get_handle( RESOURCE_ID_FONT_ARCHISM_20 ) ) );
+  layer_add_child( window_layer, text_layer_get_layer(text_date_layer) );
 
-  // Force tick event (to avoid blank screen)
-  handle_tick( ctx, NULL );
+  // Subscribe to services
+  tick_timer_service_subscribe( MINUTE_UNIT, handle_tick );
 }
 
 
 /*
   dealloc
 */
-void handle_deinit( AppContextRef ctx ) {
-  (void)ctx;
+static void handle_deinit( void ) {
+  // Subscribe from services
+  tick_timer_service_unsubscribe();
 
-  // Unload custom fonts
-  fonts_unload_custom_font( font_time );
-  fonts_unload_custom_font( font_date );
+  // Destroy objects
+  text_layer_destroy( text_time_layer );
+  text_layer_destroy( text_date_layer );
+  layer_remove_from_parent(bitmap_layer_get_layer(sign_layer));
+  bitmap_layer_destroy( sign_layer );
+  gbitmap_destroy( sign_image );
 
-  // Unload bitmaps
-  bmp_deinit_container( &sign_image );
+  window_destroy( window );
 }
 
 
 /* Main
 */
-void pbl_main( void *params ) {
-  PebbleAppHandlers handlers = {
-    .init_handler = &handle_init,
-    .deinit_handler = &handle_deinit,
-    .tick_info = {
-      .tick_handler = &handle_tick,
-      .tick_units = MINUTE_UNIT
-    }
-  };
-  app_event_loop( params, &handlers );
+int main( void ) {
+  handle_init();
+  app_event_loop();
+  handle_deinit();
 }

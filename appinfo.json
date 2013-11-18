@@ -1,0 +1,94 @@
+{
+  "uuid": "61501f90-ddc7-4c76-b7b6-ea15e25da577",
+  "shortName": "Zodiac",
+  "longName": "Zodiac",
+  "companyName": "Little Gem Software",
+  "versionCode": 2,
+  "versionLabel": "2.0.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {},
+  "resources": {
+    "media": [
+      {
+        "menuIcon": true,
+        "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/menu_icon_zodiac.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ARIES",
+        "file": "images/aries.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_TAURUS",
+        "file": "images/taurus.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_GEMINI",
+        "file": "images/gemini.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_CANCER",
+        "file": "images/cancer.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_LEO",
+        "file": "images/leo.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_VIRGO",
+        "file": "images/virgo.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_LIBRA",
+        "file": "images/libra.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_SCORPIO",
+        "file": "images/scorpio.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_SAGITTARIUS",
+        "file": "images/sagittarius.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_CAPRICORN",
+        "file": "images/capricorn.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_AQUARIUS",
+        "file": "images/aquarius.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_PISCES",
+        "file": "images/pisces.png"
+      },
+      {
+        "characterRegex": "[/0-9]",
+        "type": "font",
+        "name": "FONT_ARCHISM_20",
+        "file": "fonts/D3Archism.ttf"
+      },
+      {
+        "characterRegex": "[:0-9]",
+        "type": "font",
+        "name": "FONT_ARCHISM_SUBSET_48",
+        "file": "fonts/D3Archism.ttf"
+      }
+    ]
+  }
+}
