@@ -1,4 +1,4 @@
-v2.0.0 (Xxxx xx)
+v2.0.0 (Nov 18)
 
 * Updated for Pebble SDK 2
 

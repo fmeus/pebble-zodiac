@@ -22,7 +22,6 @@ Set up waf:
 
 Configure and build:
 
-	./waf configure
 	src/makeall.sh
 
 Compiled version can be found in the folder `releases`
