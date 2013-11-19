@@ -21,3 +21,5 @@ for fmt in "${formats[@]}"
 do
 	build $fmt
 done
+
+pebble clean
