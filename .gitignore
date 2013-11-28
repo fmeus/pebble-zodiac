@@ -2,7 +2,6 @@
 # Ignore build generated files
 build
 .lock-waf*
-wscript
 
 # Ignore compiled versions
 releases
